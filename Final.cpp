@@ -1,5 +1,5 @@
 ﻿/*---------------------------------------------------------*/
-/* ----------------  Proyecto Final  -----------*/
+/* ----------------  Práctica                   -----------*/
 /*-----------------    2024-1   ---------------------------*/
 /*------------- Alumno:                     ---------------*/
 /*------------- No. Cuenta                  ---------------*/
@@ -44,8 +44,8 @@ GLFWmonitor *monitors;
 void getResolution(void);
 
 // camera
-Camera camera(glm::vec3(0.0f, 10.0f, 90.0f));
-float MovementSpeed = 0.1f;
+Camera camera(glm::vec3(900.0f, 400.0f, -500.0f));
+float MovementSpeed = 2.0f;
 float lastX = SCR_WIDTH / 2.0f;
 float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
@@ -57,8 +57,20 @@ double	deltaTime = 0.0f,
 		lastFrame = 0.0f;
 
 //Lighting
-glm::vec3 lightPosition(0.0f, 4.0f, -10.0f);
+glm::vec3 lightPosition(0.0f, 4.0f, -5000.0f);
 glm::vec3 lightDirection(0.0f, -1.0f, -1.0f);
+
+float	myVar = 0.0f;
+bool	cambioColor = false;
+float	rojo = 0.0f,
+		verde = 0.0f,
+		azul = 0.0f;
+
+float	blue = 0.0;
+bool	Presskey = false;
+bool	lightwhite = false;
+
+
 
 //// Light
 glm::vec3 lightColor = glm::vec3(0.7f);
@@ -66,15 +78,42 @@ glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
 glm::vec3 ambientColor = diffuseColor * glm::vec3(0.75f);
 
 // posiciones
+int estado_carro = 0;
+int estado_planeta = 0;
+
 float	movAuto_x = 0.0f,
-		movAuto_z = 0.0f,
-		orienta = 0.0f;
+movAuto_y = 0.0f,
+movAuto_z = 0.0f,
+orienta = 0.0f,
+orienta_mercurio = 0.0f;
+
+float	movPlanetaMer_x = 0.0f,
+		movPlanetaMer_y = 0.0f,
+		movPlanetaMer_z = 0.0f;
+
+float	TrasX = 0.0f,
+		TrasY = 0.0f,
+		TrasZ = 0.0f;
+
+float	variableTraslacion = 0.0f;
+
+
+float	inclinacion_x = 0.0f,
+		inclinacion_y = 1.0f,
+		inclinacion_z = 0.0f;
+
 bool	animacion = false,
 		recorrido1 = true,
 		recorrido2 = false,
 		recorrido3 = false,
 		recorrido4 = false;
 
+float angulo_sol = 0.0f,
+	  angulo = 0.0f;
+
+bool traslacionplaneta = false;
+
+bool	reversa = false;
 
 //Keyframes (Manipulación y dibujo)
 float	posX = 0.0f,
@@ -145,6 +184,30 @@ void interpolation(void)
 
 void animate(void)
 {
+
+	lightPosition.x = 4000.0f * sin(myVar);  //que nuestra luz se muestre en circulos
+	lightPosition.y = 4000.0f * cos(myVar);
+
+	myVar += 0.0001f; //Velocidad en la que se mueve la luz
+
+	if (cambioColor == true) {
+		rojo -= 0.01f;
+		verde -= 0.002f;
+		azul -= 0.0003f;
+		if (rojo <= 0.0f) {
+			rojo = 1.0f;
+		}
+		if (verde <= 0.0f)
+		{
+			verde = 1.0f;
+		}
+		if (azul <= 0.0f)
+		{
+			azul = 1.0f;
+		}
+	}
+
+
 	if (play)
 	{
 		if (i_curr_steps >= i_max_steps) //end of animation between frames?
@@ -178,10 +241,91 @@ void animate(void)
 		}
 	}
 
+	if (traslacionplaneta)
+	{
+		angulo += 1;
+		if (angulo > 360)
+		{
+			angulo = 0;
+		}
+
+	}
+
 	//Vehículo
 	if (animacion)
 	{
-		movAuto_z += 3.0f;
+		if (estado_carro == 0)
+		{
+			movAuto_z += 3.0f;
+			orienta = 0.0f;
+			if (movAuto_z >= 200.0f)
+				estado_carro = 1;
+		}
+		if (estado_carro == 1)
+		{
+			movAuto_x -= 3.0f;
+			inclinacion_x = 0.0f;
+			inclinacion_y = 1.0f;
+			inclinacion_z = 0.0f;
+			orienta = -90.0f;
+			if (movAuto_x <= -250.0f)
+				estado_carro = 2;
+
+		}
+		if (estado_carro == 2)
+		{
+			movAuto_z -= 3.0f;
+			inclinacion_x = 0.0f;
+			inclinacion_y = 1.0f;
+			inclinacion_z = 0.0f;
+			orienta = 180.0f;
+			if (movAuto_z <= -200.0f)
+				estado_carro = 3;
+
+		}
+		if (estado_carro == 3)
+		{
+			movAuto_x += 3.0f;
+			inclinacion_x = 0.0f;
+			inclinacion_y = 1.0f;
+			inclinacion_z = 0.0f;
+			orienta = -270.0f;
+			if (movAuto_x >= 0.0f)
+				estado_carro = 4;
+		}
+		if (estado_carro == 4)
+		{
+			movAuto_y += 0.625f;
+			movAuto_z += 3.0f;
+			inclinacion_x = 0.0f;
+			inclinacion_y = 1.0f;
+			inclinacion_z = 0.0f;
+			orienta = -15.0f;
+			inclinacion_x = 1.0f;
+			inclinacion_y = 0.0f;
+			inclinacion_z = 0.0f;
+			if (movAuto_z >= 30.0f)
+				estado_carro = 5;
+			//animacion = false; //desactivamos la animacion para poder detener el carro en el origen
+
+		}
+		if (estado_carro == 5)
+		{
+			movAuto_y -= 0.6f; //si queremos que vaya mas rapido lo multiplicamos por si mismo 
+			movAuto_z += 3.00f;
+			inclinacion_x = 0.0f;
+			inclinacion_y = 1.0f;
+			inclinacion_z = 0.0f;
+			orienta = 25.0f;
+			inclinacion_x = 1.0f;
+			inclinacion_y = 0.0f;
+			inclinacion_z = 0.0f;
+			if (movAuto_y <= 0.0f)
+				//animacion = false;
+				estado_carro = 1;
+		}
+
+
 	}
 }
 
@@ -267,17 +411,43 @@ int main()
 
 	// load models
 	// -----------
-	Model piso("resources/objects/floor/piso.obj"); 
+	//Model piso("resources/objects/piso/piso.obj");
+	/*Model botaDer("resources/objects/Personaje/bota.obj");
+	Model piernaDer("resources/objects/Personaje/piernader.obj");
+	Model piernaIzq("resources/objects/Personaje/piernader.obj");
+	Model torso("resources/objects/Personaje/torso.obj");
+	Model brazoDer("resources/objects/Personaje/brazoder.obj");
+	Model brazoIzq("resources/objects/Personaje/brazoizq.obj");
+	Model cabeza("resources/objects/Personaje/cabeza.obj");*/
 	Model carro("resources/objects/lambo/carroceria.obj");
 	Model llanta("resources/objects/lambo/Wheel.obj");
-	Model museo("resources/Museo/museo.obj");
+	//Model casaVieja("resources/objects/casa/OldHouse.obj");
+	//Model cubo("resources/objects/cubo/cube02.obj");
+	//Model casaDoll("resources/objects/casa/DollHouse.obj");*/
 
 
-	ModelAnim animacionPersonaje("resources/objects/Personaje1/PersonajeBrazo.dae");
-	animacionPersonaje.initShaders(animShader.ID);
+	//Model suelo("resources/objects/suelo/suelo.obj");
+	//Model pasto("resources/objects/house/pasto.obj");
+	Model museofinal("resources/objects/estructura/museofinal.obj");
+	//Model museo("resources/objects/estructura/museofinal.obj");
 
-	ModelAnim ninja("resources/objects/ZombieWalk/ZombieWalk.dae");
-	ninja.initShaders(animShader.ID);
+	//Sistema solar
+	Model sol("resources/objects/universo/sol.obj");
+	Model luna("resources/objects/universo/luna.obj");
+	Model mercurio("resources/objects/universo/mercurio.obj");
+	Model venus("resources/objects/universo/venus.obj");
+	Model tierra("resources/objects/universo/tierra.obj");
+	Model marte("resources/objects/universo/marte.obj");
+	Model jupiter("resources/objects/universo/jupiter.obj");
+	Model saturno("resources/objects/universo/saturno.obj");
+	//Model urano("resources/objects/universo/urano.obj");
+	//Model neptuno("resources/objects/universo/neptuno.obj");
+
+	//ModelAnim animacionPersonaje("resources/objects/Personaje1/PersonajeBrazo.dae");
+	//animacionPersonaje.initShaders(animShader.ID);
+
+	//ModelAnim ninja("resources/objects/ZombieWalk/ZombieWalk.dae");
+	//ninja.initShaders(animShader.ID);
 
 	//Inicialización de KeyFrames
 	for (int i = 0; i < MAX_FRAMES; i++)
@@ -317,41 +487,45 @@ int main()
 		//Setup Advanced Lights
 		staticShader.setVec3("viewPos", camera.Position);
 		staticShader.setVec3("dirLight.direction", lightDirection);
-		staticShader.setVec3("dirLight.ambient", ambientColor);
-		staticShader.setVec3("dirLight.diffuse", diffuseColor);
-		staticShader.setVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
+		staticShader.setVec3("dirLight.ambient", glm::vec3(0.6f, 0.6f, 0.6f));
+		staticShader.setVec3("dirLight.diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+		staticShader.setVec3("dirLight.specular", glm::vec3(0.0f, 0.0f, 0.0f));
 
-		staticShader.setVec3("pointLight[0].position", lightPosition);
+		staticShader.setVec3("pointLight[0].position", glm::vec3(4.0f, 0.0f, 7.0f));
 		staticShader.setVec3("pointLight[0].ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-		staticShader.setVec3("pointLight[0].diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+		staticShader.setVec3("pointLight[0].diffuse", glm::vec3(rojo, verde, azul));
 		staticShader.setVec3("pointLight[0].specular", glm::vec3(0.0f, 0.0f, 0.0f));
-		staticShader.setFloat("pointLight[0].constant", 0.08f);
-		staticShader.setFloat("pointLight[0].linear", 0.009f);
-		staticShader.setFloat("pointLight[0].quadratic", 0.032f);
+		staticShader.setFloat("pointLight[0].constant", 0.0008f);
+		staticShader.setFloat("pointLight[0].linear", 0.00000009f);
+		staticShader.setFloat("pointLight[0].quadratic", 0.000032f);
 
 		staticShader.setVec3("pointLight[1].position", glm::vec3(-80.0, 0.0f, 0.0f));
 		staticShader.setVec3("pointLight[1].ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-		staticShader.setVec3("pointLight[1].diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+		staticShader.setVec3("pointLight[1].diffuse", glm::vec3(0.0f, 0.0f, blue));
 		staticShader.setVec3("pointLight[1].specular", glm::vec3(0.0f, 0.0f, 0.0f));
 		staticShader.setFloat("pointLight[1].constant", 1.0f);
 		staticShader.setFloat("pointLight[1].linear", 0.009f);
-		staticShader.setFloat("pointLight[1].quadratic", 0.032f);
+		staticShader.setFloat("pointLight[1].quadratic", 1.0f);
 
-		staticShader.setVec3("spotLight[0].position", glm::vec3(0.0f, 20.0f, 10.0f));
+		/**/staticShader.setVec3("spotLight[0].position", lightPosition);
 		staticShader.setVec3("spotLight[0].direction", glm::vec3(0.0f, -1.0f, 0.0f));
-		staticShader.setVec3("spotLight[0].ambient", glm::vec3(0.0f, 0.0f, 0.0f));
-		staticShader.setVec3("spotLight[0].diffuse", glm::vec3(0.0f, 0.0f, 0.0f));
+		staticShader.setVec3("spotLight[0].ambient", glm::vec3(0.6f, 0.6f, 0.8f));
+		staticShader.setVec3("spotLight[0].diffuse", glm::vec3(0.8f, 0.8f, 0.8f));
 		staticShader.setVec3("spotLight[0].specular", glm::vec3(0.0f, 0.0f, 0.0f));
 		staticShader.setFloat("spotLight[0].cutOff", glm::cos(glm::radians(10.0f)));
 		staticShader.setFloat("spotLight[0].outerCutOff", glm::cos(glm::radians(60.0f)));
-		staticShader.setFloat("spotLight[0].constant", 1.0f);
-		staticShader.setFloat("spotLight[0].linear", 0.0009f);
-		staticShader.setFloat("spotLight[0].quadratic", 0.0005f);
+		staticShader.setFloat("spotLight[0].constant", 0.000001f);
+		staticShader.setFloat("spotLight[0].linear", 0.00009f);
+		staticShader.setFloat("spotLight[0].quadratic", 0.0000032f); //potencia de luz
 
 		staticShader.setFloat("material_shininess", 32.0f);
 
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 tmp = glm::mat4(1.0f);
+		glm::mat4 tmp1 = glm::mat4(1.0f);
+		glm::mat4 tmp2 = glm::mat4(1.0f);
+		glm::mat4 tmp3 = glm::mat4(1.0f);
+
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 10000.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -375,21 +549,21 @@ int main()
 		animShader.setVec3("light.direction", lightDirection);
 		animShader.setVec3("viewPos", camera.Position);
 
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(-40.3f, 1.75f, 0.3f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(1.2f));	// it's a bit too big for our scene, so scale it down
-		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		animShader.setMat4("model", model);
-		animacionPersonaje.Draw(animShader);
+		//model = glm::translate(glm::mat4(1.0f), glm::vec3(-40.3f, 1.75f, 0.3f)); // translate it down so it's at the center of the scene
+		//model = glm::scale(model, glm::vec3(1.2f));	// it's a bit too big for our scene, so scale it down
+		//model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//animShader.setMat4("model", model);
+		//animacionPersonaje.Draw(animShader);
 
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Segundo Personaje Animacion
 		// -------------------------------------------------------------------------------------------------------------------------
 
-		model = glm::translate(glm::mat4(1.0f), glm::vec3(40.3f, 1.75f, 0.3f)); // translate it down so it's at the center of the scene
+		/*model = glm::translate(glm::mat4(1.0f), glm::vec3(40.3f, 1.75f, 0.3f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(0.5f));	// it's a bit too big for our scene, so scale it down
 		model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 		animShader.setMat4("model", model);
-		ninja.Draw(animShader);
+		ninja.Draw(animShader);*/
 
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Escenario
@@ -398,29 +572,101 @@ int main()
 		staticShader.setMat4("projection", projection);
 		staticShader.setMat4("view", view);
 
-		//model = glm::translate(glm::mat4(1.0f), glm::vec3(250.0f, 0.0f, -10.0f));
-		//model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		//staticShader.setMat4("model", model);
-		//casaDoll.Draw(staticShader);
+		/*model = glm::translate(glm::mat4(1.0f), glm::vec3(250.0f, 0.0f, -10.0f));
+		model = glm::rotate(model, glm::radians(-90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		staticShader.setMat4("model", model);
+		casaDoll.Draw(staticShader);
 
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.2f));
 		staticShader.setMat4("model", model);
-		piso.Draw(staticShader);
+		piso.Draw(staticShader);*/
 
-		//model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -70.0f));
-		//model = glm::scale(model, glm::vec3(5.0f));
+		//model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, -10.0f, 90.0f));
+		//model = glm::scale(model, glm::vec3(0.2f));
 		//staticShader.setMat4("model", model);
-		//staticShader.setVec3("dirLight.specular", glm::vec3(0.0f, 0.0f, 0.0f));
-		//casaVieja.Draw(staticShader);
+		//pasto.Draw(staticShader);*/
+		
+		//ESTRUCTURA MUSEO
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-6000.0f, -1.75f, 0.0f));
+		model = glm::scale(model, glm::vec3(1.0f));
+		staticShader.setMat4("model", model);
+		museofinal.Draw(staticShader);
+
+		
+		//MODELOS SALA UNIVERSO
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-2200.0f, 900.0f, -6900.0f));
+		model = glm::rotate(model, glm::radians(angulo), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::scale(model, glm::vec3(3.0f));
+		staticShader.setMat4("model", model);
+		sol.Draw(staticShader);
+
+		tmp1 = glm::translate(glm::mat4(1.0f), glm::vec3(-2200.0f, 1050.0f, -6900.0f));
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-2200.0f, 1050.0f, -6900.0f));
+		model = glm::rotate(tmp1, glm::radians(3*angulo-45), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(200.0f, 0.0f,0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(0.6f));
+		staticShader.setMat4("model", model);
+		mercurio.Draw(staticShader);
+		
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+		model = glm::rotate(tmp1, glm::radians(3*angulo-75), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(280.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(0.8f));
+		staticShader.setMat4("model", model);
+		venus.Draw(staticShader);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+		model = glm::rotate(tmp1, glm::radians(2*angulo+70), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		tmp3 = model = glm::translate(model, glm::vec3(420.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(1.0f));
+		staticShader.setMat4("model", model);
+		tierra.Draw(staticShader);
+		
+		tmp2 = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+
+		model = glm::translate(tmp2, glm::vec3(0.0f, 0.0f, 0.0f));
+		model = glm::rotate(tmp3, glm::radians(2*angulo+70), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(100.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(0.3f));
+		staticShader.setMat4("model", model);
+		luna.Draw(staticShader);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+		model = glm::rotate(tmp1, glm::radians(2*angulo+150), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(510.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(1.2f));
+		staticShader.setMat4("model", model);
+		marte.Draw(staticShader);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+		model = glm::rotate(tmp1, glm::radians(angulo-115), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(680.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(1.5f));
+		staticShader.setMat4("model", model);
+		jupiter.Draw(staticShader);
+
+		model = glm::translate(glm::mat4(1.0f), glm::vec3(-1900.0f, 1050.0f, -6700.0f));
+		model = glm::rotate(tmp1, glm::radians(angulo+180), glm::vec3(0.0f, 1.0f, 0.0f)); //rotacion sobre su mismo eje
+		model = glm::translate(model, glm::vec3(850.0f, 0.0f, 0.0f)); //Distancia que se movera alrededor del sol
+		model = glm::scale(model, glm::vec3(3.5f));
+		staticShader.setMat4("model", model);
+		saturno.Draw(staticShader);
+
+		/*model = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -70.0f));
+		model = glm::scale(model, glm::vec3(5.0f));
+		staticShader.setMat4("model", model);
+		staticShader.setVec3("dirLight.specular", glm::vec3(0.0f, 0.0f, 0.0f));
+		casaVieja.Draw(staticShader);*/
 
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Carro
 		// -------------------------------------------------------------------------------------------------------------------------
 		model = glm::rotate(glm::mat4(1.0f), glm::radians(90.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::translate(model, glm::vec3(15.0f + movAuto_x, -1.0f, movAuto_z));
-		tmp = model = glm::rotate(model, glm::radians(orienta), glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::translate(model, glm::vec3(15.0f + movAuto_x, -1.0f + movAuto_y, movAuto_z));
+		tmp = model = glm::rotate(model, glm::radians(orienta), glm::vec3(inclinacion_x, inclinacion_y, inclinacion_z));
 		model = glm::scale(model, glm::vec3(0.1f, 0.1f, 0.1f));
 		staticShader.setVec3("dirLight.specular", glm::vec3(0.6f, 0.6f, 0.6f));
 		staticShader.setMat4("model", model);
@@ -450,13 +696,6 @@ int main()
 		// -------------------------------------------------------------------------------------------------------------------------
 		// Personaje
 		// -------------------------------------------------------------------------------------------------------------------------
-		
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f));
-		model = glm::scale(model, glm::vec3(-0.2f));
-		staticShader.setMat4("model", model);
-		museo.Draw(staticShader);
-		
 		/*model = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, 0));
 		model = glm::translate(model, glm::vec3(posX, posY, posZ));
 		tmp = model = glm::rotate(model, glm::radians(giroMonito), glm::vec3(0.0f, 1.0f, 0.0));
@@ -582,9 +821,52 @@ void my_input(GLFWwindow *window, int key, int scancode, int action, int mode)
 	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
 		lightPosition.x--;
 
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+	{
+		if (!lightwhite) {
+			rojo = 1.0f;
+			azul = 1.0f;
+			verde = 1.0f;
+
+			cambioColor = true;
+			lightwhite = true;
+		}
+		else {
+
+			rojo = 0.0f;
+			azul = 0.0f;
+			verde = 0.0f;
+			lightwhite = false;
+			cambioColor = false;
+		}
+
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+		if (!Presskey) {
+			blue = 1.0f;
+			Presskey = true;
+		}
+		else {
+			blue = 0.0f;
+			Presskey = false;
+		}
+
 	//Car animation
+	//if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+		//animacion ^= true;
+
 	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-		animacion ^= true;
+		traslacionplaneta ^= true;
+	
+	if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+		traslacionplaneta = false;
+
+	/*if (key == GLFW_KEY_1 && action == GLFW_PRESS)
+	{
+		movAuto_z = 0.0f,
+		animacion = false;
+	}*/
 
 	//To play KeyFrame animation 
 	if (key == GLFW_KEY_P && action == GLFW_PRESS)
